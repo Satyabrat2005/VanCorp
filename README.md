@@ -78,15 +78,18 @@ git clone https://github.com/your-username/google-tryon.git
 cd "your file name" 
 
 2️⃣ Create Environment
+
 python -m venv venv
 venv\Scripts\activate  # Windows
 # source venv/bin/activate  # Linux/Mac
 
 3️⃣ Install Dependencies
+
 pip install -r requirements.txt
 ⚠️ Make sure you use Python 3.10 for MediaPipe & DL compatibility.
 
 4️⃣ Start the FastAPI Server
+
 uvicorn app.main:app --reload
 
 Access Swagger UI at: http://localhost:8000/docs
@@ -94,9 +97,13 @@ Access Swagger UI at: http://localhost:8000/docs
 # 🖥️ Minimum System Requirements
 
 CPU: Intel i7/i9 (8+ cores)
+
 GPU: NVIDIA RTX 3060/4060 or higher
+
 RAM: 16GB+
+
 Disk: 10GB+ free (for model weights)
+
 Python: 3.10.x
 
 # Contributors
