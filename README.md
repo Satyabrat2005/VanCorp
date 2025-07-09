@@ -44,7 +44,7 @@ Real-time Support	      ONNX, TensorFlow Lite, MediaPipe
 
 # Project Structure
 
-google_tryon/
+virtual try on/
 ├── app/
 │   ├── main.py
 │   ├── routes/
