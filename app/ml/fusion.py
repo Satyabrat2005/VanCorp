@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 
+from app.ml.cloth_wrapping import wrap_cloth
+
 def fuse_tryon_output(user_image: np.ndarray, cloth_image: np.ndarray, keywords:dict) -> np.ndarray:
     """
     Combines the warped cloth with user image using basic alpha blending.
@@ -14,7 +16,7 @@ def fuse_tryon_output(user_image: np.ndarray, cloth_image: np.ndarray, keywords:
         np.ndarray: Final output image.
     """
 
-    gray = cv2.cvtColor(wrap_cloth, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(wrap_cloth, cv2.COLOR_BGR2GRAY) # type: ignore
     _, mask = cv2.threshold(gray, 10, 255, cv2.THRESH_BINARY)
     mask_inv = cv2.bitwise_not(mask)
 
@@ -22,7 +24,7 @@ def fuse_tryon_output(user_image: np.ndarray, cloth_image: np.ndarray, keywords:
     mask_inv_rgb = cv2.merge([mask_inv, mask_inv, mask_inv])
 
     user_bg = cv2.bitwise_and(user_image, mask_inv_rgb)
-    cloth_fg = cv2.bitwise_and(wrap_cloth, mask_rgb)
+    cloth_fg = cv2.bitwise_and(wrap_cloth, mask_rgb) # type: ignore
 
     blended = cv2.add(user_bg, cloth_fg)
     return blended
