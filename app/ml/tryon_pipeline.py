@@ -7,7 +7,7 @@ from app.ml.pose_estimator import estimate_pose
 from app.ml.cloth_wrapping import wrap_cloth
 from app.ml.fusion import fuse_tryon_output
 
-def run_virtual_tryon(user_image_path: str, cloth_image_path: str)
+def run_virtual_tryon(user_image_path: str, cloth_image_path: str):
     """
     Full end-to-end virtual try-on pipeline:
     1. Load images
