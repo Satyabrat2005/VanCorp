@@ -1,0 +1,6 @@
+IMG_HEIGHT = 256
+IMG_WIDTH = 192
+CHANNELS = 3
+
+MEAN = [0.5, 0.5, 0.5]
+STD = [0.5, 0.5, 0.5]
