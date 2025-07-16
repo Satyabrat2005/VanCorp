@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 from typing import Dict
 from diffusers import StableDiffusionInpaintPipeline  # type: ignore
-from huggingface_hub import login, HfFolder
+from huggingface_hub import login, HfFolder, hf_hub_download
 
 from app.ml.cloth_wrapping import wrap_cloth
 from assets.tryongan.tryon_gan import TryOnGenerator
@@ -17,6 +17,16 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 if not HfFolder.get_token():
     login()
 HF_TOKEN = HfFolder.get_token()
+
+# ---------- Download Required Models from Hugging Face Hub ----------
+MODEL_REPO = "Satyabrat266/tryon-models"
+
+tryon_path = hf_hub_download(
+    repo_id=MODEL_REPO,
+    filename="tryongan.pth",
+    local_dir="assets/tryongan",
+)
+# You can repeat hf_hub_download for other .pth files like spade_generator.pth, tps_grid.pth, etc.
 
 # ---------- Load Stable Diffusion Inpainting ----------
 try:
@@ -30,12 +40,12 @@ try:
     pipe.enable_attention_slicing()
     pipe.safety_checker = lambda images, **kwargs: (images, [False] * len(images))  # Disable NSFW checker
 except Exception as e:
-    print(f"⚠️ Could not load Stable Diffusion pipeline. Reason: {e}")
+    print(f"⚠ Could not load Stable Diffusion pipeline. Reason: {e}")
     pipe = None
 
 # ---------- Load TryOnGAN ----------
 gan_generator = TryOnGenerator()
-gan_generator.load_state_dict(torch.load("assets/tryongan/tryongan.pth", map_location=device))
+gan_generator.load_state_dict(torch.load(tryon_path, map_location=device))
 gan_generator.eval().to(device)
 
 # ---------- Fusion Function ----------
@@ -74,7 +84,7 @@ def fuse_tryon_output(
             final = cv2.cvtColor(np.array(result), cv2.COLOR_RGB2BGR)
             return final
         except Exception as e:
-            print(f"⚠️ Stable Diffusion failed: {e} — using TryOnGAN fallback.")
+            print(f"⚠ Stable Diffusion failed: {e} — using TryOnGAN fallback.")
 
     # Step 4: Fallback to TryOnGAN
     input_tensor = torch.tensor(blended.transpose(2, 0, 1)).unsqueeze(0).float() / 127.5 - 1
