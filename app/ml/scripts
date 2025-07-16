@@ -1,0 +1,17 @@
+from huggingface_hub import hf_hub_download
+
+# Download TryOnGAN .pth
+hf_hub_download(
+    repo_id="Satyabrat266/tryon-models",
+    filename="tryongan.pth",
+    local_dir="assets/tryongan",
+    local_dir_use_symlinks=False
+)
+
+# Download TPS grid file
+hf_hub_download(
+    repo_id="Satyabrat266/tryon-models",
+    filename="tps_grid.pth",
+    local_dir="assets/tps",
+    local_dir_use_symlinks=False
+)
