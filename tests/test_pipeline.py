@@ -1,4 +1,5 @@
 import cv2
+import fastapi
 from app.ml.tryon_pipeline import run_virtual_tryon
 
 def test_run_virtual_tryon_output():
