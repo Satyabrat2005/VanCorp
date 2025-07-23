@@ -1,0 +1,9 @@
+{
+  "input_channels": 9,
+  "output_channels": 3,
+  "ngf": 64,
+  "checkpoint_path": "assets/tryongan/weights/tryon_gan.pth",
+  "use_tanh": true,
+  "use_cuda": true
+}
+.
