@@ -1,0 +1,8 @@
+segmentation:
+  model: "deeplabv3plus"  # or "cihp", "schp"
+  backbone: "resnet101"
+  num_classes: 20
+  input_size: [512, 512]
+  checkpoint_path: "assets/cihp/checkpoints/deeplabv3plus.pth"
+  use_cuda: true
+  refine_mask: true
