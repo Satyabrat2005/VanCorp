@@ -1,0 +1,9 @@
+viton:
+  model: "cp-vton"        # or "viton-hd"
+  input_size: [192, 256]
+  tps_grid_size: 3
+  tps_reg_factor: 0.2
+  warp_mode: "tps"
+  gmm_checkpoint: "assets/viton/checkpoints/gmm_final.pth"
+  tom_checkpoint: "assets/viton/checkpoints/tom_final.pth"
+  use_cuda: true
