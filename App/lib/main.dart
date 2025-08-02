@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:animated_text_kit/animated_text_kit.dart';
-import 'dart:math';
 
-void main() {
-  runApp(const MyBlackHomeApp());
-}
+void main() => runApp(const MyApp());
 
-class MyBlackHomeApp extends StatelessWidget {
-  const MyBlackHomeApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,168 +11,117 @@ class MyBlackHomeApp extends StatelessWidget {
       title: 'Vancorp Holdings',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
-      home: const MyHomePage(),
+      home: const SplashAppleStyle(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+class SplashAppleStyle extends StatefulWidget {
+  const SplashAppleStyle({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<SplashAppleStyle> createState() => _SplashAppleStyleState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
-  late final List<AnimationController> _controllers;
-  late final List<Animation<Offset>> _animations;
-  late final AnimationController _glowController;
-
-  final List<Offset> directions = [
-    const Offset(0, -2), // V
-    const Offset(-2, 0), // A
-    const Offset(2, 0),  // N
-    const Offset(0, 2),  // I
-    const Offset(1.5, -1.5), // T
-    const Offset(-1.5, 1.5), // Y
-  ];
-
-  final String text = "VANITY";
-  final Color neonGreen = const Color(0xFF1B5801);
+class _SplashAppleStyleState extends State<SplashAppleStyle> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _circleAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    _controllers = List.generate(
-      text.length,
-      (index) => AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 700),
-      ),
-    );
-
-    _animations = List.generate(
-      text.length,
-      (index) => Tween<Offset>(
-        begin: directions[index],
-        end: Offset.zero,
-      ).animate(CurvedAnimation(
-        parent: _controllers[index],
-        curve: Curves.easeOut,
-      )),
-    );
-
-    for (int i = 0; i < _controllers.length; i++) {
-      Future.delayed(Duration(milliseconds: i * 250), () {
-        _controllers[i].forward();
-      });
-    }
-
-    _glowController = AnimationController(
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
       vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat(reverse: true);
+    );
+
+    _circleAnimation = Tween<Offset>(
+      begin: const Offset(0.5, 1.5), // Start from bottom center
+      end: const Offset(-1.0, -1.0), // End at top left corner
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+
+    _controller.forward();
   }
 
   @override
   void dispose() {
-    for (final controller in _controllers) {
-      controller.dispose();
-    }
-    _glowController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text('Vancorp Holdings'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: const Icon(Icons.phone),
-      ),
+      backgroundColor: const Color(0xFF0B0B0D), // Deep blackish gray
       body: Stack(
         children: [
-          // Dim background
-          Container(color: Colors.black),
-
-          // Glowing circular region in top right
-          Positioned(
-            top: 60,
-            right: 30,
-            child: AnimatedBuilder(
-              animation: _glowController,
-              builder: (context, child) {
-                double glow = 20 + (_glowController.value * 40);
-                return Container(
-                  width: 250,
-                  height: 250,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        // ignore: deprecated_member_use
-                        neonGreen.withOpacity(0.4),
-                        // ignore: deprecated_member_use
-                        neonGreen.withOpacity(0.05),
-                        Colors.transparent,
-                      ],
-                      radius: 0.9,
+          // Animated Glowing Circle
+          SlideTransition(
+            position: _circleAnimation,
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: Container(
+                margin: const EdgeInsets.only(top: 60, left: 30),
+                width: 140,
+                height: 140,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.6),
+                    width: 2.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white.withOpacity(0.15),
+                      blurRadius: 60,
+                      spreadRadius: 8,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        // ignore: deprecated_member_use
-                        color: neonGreen.withOpacity(0.5),
-                        blurRadius: glow,
-                        spreadRadius: 10,
-                      ),
-                    ],
+                  ],
+                  gradient: const RadialGradient(
+                    colors: [Color(0xFF1F2A3D), Color(0xFF0B0B0D)],
+                    center: Alignment.center,
+                    radius: 0.85,
                   ),
-                  child: child,
-                );
-              },
-              // Inner content: text and animation
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  AnimatedTextKit(
-                    repeatForever: true,
-                    animatedTexts: [
-                      TypewriterAnimatedText(
-                        'Welcome to Vancorp Holdings',
-                        textStyle: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: neonGreen,
-                        ),
-                        speed: const Duration(milliseconds: 100),
-                      ),
-                    ],
+                ),
+                child: const Center(
+                  child: Text(
+                    "VANITY",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 3,
+                      fontFamily: 'San Francisco',
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(text.length, (index) {
-                      return SlideTransition(
-                        position: _animations[index],
-                        child: Text(
-                          text[index],
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: neonGreen,
-                            letterSpacing: 3,
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ],
+                ),
               ),
+            ),
+          ),
+
+          // Slogan / Quote below
+          Positioned(
+            top: screenSize.height * 0.33,
+            left: 30,
+            right: 30,
+            child: Column(
+              children: const [
+                Text(
+                  '"Empowering the shape of ecommerce\nwith Vancorp Holdings"',
+                  style: TextStyle(
+                    color: Color(0xFFB0B3B8),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: 1.2,
+                    height: 1.5,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.left,
+                ),
+              ],
             ),
           ),
         ],
