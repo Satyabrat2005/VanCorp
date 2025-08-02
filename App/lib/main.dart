@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'dart:math';
 
 void main() {
   runApp(const MyBlackHomeApp());
@@ -29,17 +30,19 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   late final List<AnimationController> _controllers;
   late final List<Animation<Offset>> _animations;
+  late final AnimationController _glowController;
 
   final List<Offset> directions = [
-    const Offset(0, -2), // V - from top
-    const Offset(-2, 0), // A - from left
-    const Offset(2, 0),  // N - from right
-    const Offset(0, 2),  // I - from bottom
-    const Offset(1.5, -1.5), // T - from top right
-    const Offset(-1.5, 1.5), // Y - from bottom left
+    const Offset(0, -2), // V
+    const Offset(-2, 0), // A
+    const Offset(2, 0),  // N
+    const Offset(0, 2),  // I
+    const Offset(1.5, -1.5), // T
+    const Offset(-1.5, 1.5), // Y
   ];
 
   final String text = "VANITY";
+  final Color neonGreen = const Color(0xFF1B5801);
 
   @override
   void initState() {
@@ -69,6 +72,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         _controllers[i].forward();
       });
     }
+
+    _glowController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
   }
 
   @override
@@ -76,6 +84,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     for (final controller in _controllers) {
       controller.dispose();
     }
+    _glowController.dispose();
     super.dispose();
   }
 
@@ -90,39 +99,85 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         centerTitle: true,
         leading: const Icon(Icons.phone),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      body: Stack(
         children: [
-          AnimatedTextKit(
-            repeatForever: true,
-            animatedTexts: [
-              TypewriterAnimatedText(
-                'Welcome to Vancorp Holdings',
-                textStyle: const TextStyle(
-                  fontSize: 28.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-                speed: const Duration(milliseconds: 100),
-              ),
-            ],
-          ),
-          const SizedBox(height: 40),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(text.length, (index) {
-              return SlideTransition(
-                position: _animations[index],
-                child: Text(
-                  text[index],
-                  style: const TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+          // Dim background
+          Container(color: Colors.black),
+
+          // Glowing circular region in top right
+          Positioned(
+            top: 60,
+            right: 30,
+            child: AnimatedBuilder(
+              animation: _glowController,
+              builder: (context, child) {
+                double glow = 20 + (_glowController.value * 40);
+                return Container(
+                  width: 250,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        // ignore: deprecated_member_use
+                        neonGreen.withOpacity(0.4),
+                        // ignore: deprecated_member_use
+                        neonGreen.withOpacity(0.05),
+                        Colors.transparent,
+                      ],
+                      radius: 0.9,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        // ignore: deprecated_member_use
+                        color: neonGreen.withOpacity(0.5),
+                        blurRadius: glow,
+                        spreadRadius: 10,
+                      ),
+                    ],
                   ),
-                ),
-              );
-            }),
+                  child: child,
+                );
+              },
+              // Inner content: text and animation
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AnimatedTextKit(
+                    repeatForever: true,
+                    animatedTexts: [
+                      TypewriterAnimatedText(
+                        'Welcome to Vancorp Holdings',
+                        textStyle: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: neonGreen,
+                        ),
+                        speed: const Duration(milliseconds: 100),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(text.length, (index) {
+                      return SlideTransition(
+                        position: _animations[index],
+                        child: Text(
+                          text[index],
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: neonGreen,
+                            letterSpacing: 3,
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
