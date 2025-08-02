@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(const MyApp());
+void main() {
+  runApp(const VancorpApp());
+}
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class VancorpApp extends StatelessWidget {
+  const VancorpApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,35 +13,47 @@ class MyApp extends StatelessWidget {
       title: 'Vancorp Holdings',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
-      home: const SplashAppleStyle(),
+      home: const LandingPage(),
     );
   }
 }
 
-class SplashAppleStyle extends StatefulWidget {
-  const SplashAppleStyle({super.key});
+class LandingPage extends StatefulWidget {
+  const LandingPage({super.key});
 
   @override
-  State<SplashAppleStyle> createState() => _SplashAppleStyleState();
+  State<LandingPage> createState() => _LandingPageState();
 }
 
-class _SplashAppleStyleState extends State<SplashAppleStyle> with SingleTickerProviderStateMixin {
+class _LandingPageState extends State<LandingPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<Offset> _circleAnimation;
+  late Animation<Offset> _offsetAnimation;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
-
     _controller = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: const Duration(milliseconds: 1600),
       vsync: this,
     );
 
-    _circleAnimation = Tween<Offset>(
-      begin: const Offset(0.5, 1.5), // Start from bottom center
-      end: const Offset(-1.0, -1.0), // End at top left corner
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+    _offsetAnimation = Tween<Offset>(
+      begin: const Offset(-1.5, -1.5),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
+    ));
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.2,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    ));
 
     _controller.forward();
   }
@@ -50,51 +64,51 @@ class _SplashAppleStyleState extends State<SplashAppleStyle> with SingleTickerPr
     super.dispose();
   }
 
+  void _goToNextPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const LocomotivePage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0B0D), // Deep blackish gray
+      backgroundColor: const Color(0xFF0B0B0D),
       body: Stack(
         children: [
-          // Animated Glowing Circle
-          SlideTransition(
-            position: _circleAnimation,
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: Container(
-                margin: const EdgeInsets.only(top: 60, left: 30),
-                width: 140,
-                height: 140,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.6),
-                    width: 2.5,
+          // Glowing circle animation
+          Positioned(
+            top: 60,
+            left: 60,
+            child: SlideTransition(
+              position: _offsetAnimation,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: Container(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.transparent,
+                    border: Border.all(color: Colors.white70, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.white.withOpacity(0.3),
+                        blurRadius: 40,
+                        spreadRadius: 8,
+                      ),
+                    ],
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.white.withOpacity(0.15),
-                      blurRadius: 60,
-                      spreadRadius: 8,
-                    ),
-                  ],
-                  gradient: const RadialGradient(
-                    colors: [Color(0xFF1F2A3D), Color(0xFF0B0B0D)],
-                    center: Alignment.center,
-                    radius: 0.85,
-                  ),
-                ),
-                child: const Center(
-                  child: Text(
-                    "VANITY",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 3,
-                      fontFamily: 'San Francisco',
+                  child: const Center(
+                    child: Text(
+                      'VANITY',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 2,
+                      ),
                     ),
                   ),
                 ),
@@ -102,29 +116,80 @@ class _SplashAppleStyleState extends State<SplashAppleStyle> with SingleTickerPr
             ),
           ),
 
-          // Slogan / Quote below
-          Positioned(
-            top: screenSize.height * 0.33,
-            left: 30,
-            right: 30,
-            child: Column(
-              children: const [
-                Text(
-                  '"Empowering the shape of ecommerce\nwith Vancorp Holdings"',
-                  style: TextStyle(
-                    color: Color(0xFFB0B3B8),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 1.2,
-                    height: 1.5,
-                    fontStyle: FontStyle.italic,
-                  ),
-                  textAlign: TextAlign.left,
+          // Centered Quote
+          Align(
+            alignment: Alignment.center,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28.0),
+              child: Text(
+                '"Empowering the shape of ecommerce\nwith Vancorp Holdings"',
+                style: const TextStyle(
+                  color: Color(0xFFB4B7BC),
+                  fontSize: 26,
+                  fontWeight: FontWeight.w300,
+                  height: 1.5,
                 ),
-              ],
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+
+          // Button to go to second page
+          Positioned(
+            bottom: 80,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: ElevatedButton(
+                onPressed: _goToNextPage,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 40, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  "Explore",
+                  style: TextStyle(
+                    fontSize: 16,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class LocomotivePage extends StatelessWidget {
+  const LocomotivePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text("Locomotive"),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+      ),
+      body: const Center(
+        child: Text(
+          "This is your second page.\nInspired by smooth locomotive transitions.",
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 22,
+            height: 1.6,
+          ),
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }
