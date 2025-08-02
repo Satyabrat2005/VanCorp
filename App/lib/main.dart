@@ -1,196 +1,193 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
-void main() {
-  runApp(const VancorpApp());
-}
+void main() => runApp(const VancorpDeluxeApp());
 
-class VancorpApp extends StatelessWidget {
-  const VancorpApp({super.key});
-
+class VancorpDeluxeApp extends StatelessWidget {
+  const VancorpDeluxeApp({super.key});
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Vancorp Holdings',
+      title: 'VANITY by Vancorp',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
-      home: const LandingPage(),
+      home: const HomeScreen(),
     );
   }
 }
 
-class LandingPage extends StatefulWidget {
-  const LandingPage({super.key});
-
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
   @override
-  State<LandingPage> createState() => _LandingPageState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _LandingPageState extends State<LandingPage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Offset> _offsetAnimation;
-  late Animation<double> _scaleAnimation;
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  bool quoteVisible = true;
+  bool carouselVisible = false;
+  bool brandVisible = false;
+
+  late final PageController pageController;
+  late final AnimationController quoteController;
+  late final Animation<double> quoteOpacity;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1600),
+    pageController = PageController(viewportFraction: 0.7);
+
+    quoteController = AnimationController(
       vsync: this,
+      duration: const Duration(seconds: 2),
     );
+    quoteOpacity = Tween<double>(begin: 0, end: 1).animate(
+        CurvedAnimation(parent: quoteController, curve: Curves.easeInOut));
 
-    _offsetAnimation = Tween<Offset>(
-      begin: const Offset(-1.5, -1.5),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutBack,
-    ));
+    quoteController.forward();
 
-    _scaleAnimation = Tween<double>(
-      begin: 0.2,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
+    Future.delayed(const Duration(seconds: 4), () {
+      quoteController.reverse();
+      setState(() => quoteVisible = false);
+    });
 
-    _controller.forward();
+    Future.delayed(const Duration(seconds: 5), () {
+      setState(() => carouselVisible = true);
+    });
+
+    Future.delayed(const Duration(seconds: 9), () {
+      setState(() => brandVisible = true);
+    });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    pageController.dispose();
+    quoteController.dispose();
     super.dispose();
   }
 
-  void _goToNextPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const LocomotivePage()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0B0D),
-      body: Stack(
-        children: [
-          // Glowing circle animation
-          Positioned(
-            top: 60,
-            left: 60,
-            child: SlideTransition(
-              position: _offsetAnimation,
-              child: ScaleTransition(
-                scale: _scaleAnimation,
-                child: Container(
-                  width: 140,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.transparent,
-                    border: Border.all(color: Colors.white70, width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.white.withOpacity(0.3),
-                        blurRadius: 40,
-                        spreadRadius: 8,
-                      ),
-                    ],
+      backgroundColor: const Color(0xFF0C0C0E),
+      body: Stack(children: [
+        if (quoteVisible)
+          Center(
+            child: FadeTransition(
+              opacity: quoteOpacity,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: Text(
+                  '"Empowering the shape of ecommerce with Vancorp Holdings"',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w300,
+                    height: 1.5,
+                    letterSpacing: 1.2,
+                    fontStyle: FontStyle.italic,
                   ),
-                  child: const Center(
-                    child: Text(
-                      'VANITY',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 2,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
+
+        if (carouselVisible)
+          Positioned.fill(
+            child: PageView.builder(
+              controller: pageController,
+              itemCount: sampleImages.length,
+              itemBuilder: (context, index) {
+                return AnimatedBuilder(
+                  animation: pageController,
+                  builder: (context, child) {
+                    double value = 0;
+                    if (pageController.position.hasContentDimensions) {
+                      value = pageController.page! - index;
+                    }
+                    value = (1 - value.abs() * 0.3).clamp(0.0, 1.0);
+                    double rotateY = (pageController.page! - index) * pi / 8;
+                    return Transform(
+                      transform: Matrix4.identity()
+                        ..setEntry(3, 2, 0.001)
+                        ..rotateY(rotateY)
+                        ..scale(value, value),
+                      alignment: Alignment.center,
+                      child: child,
+                    );
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 100, horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade900,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.7),
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.asset(
+                        sampleImages[index],
+                        fit: BoxFit.cover,
                       ),
                     ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ),
 
-          // Centered Quote
+        if (brandVisible)
           Align(
-            alignment: Alignment.center,
+            alignment: Alignment.bottomCenter,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28.0),
+              padding: const EdgeInsets.only(bottom: 80),
               child: Text(
-                '"Empowering the shape of ecommerce\nwith Vancorp Holdings"',
+                'VANCORP',
                 style: const TextStyle(
-                  color: Color(0xFFB4B7BC),
-                  fontSize: 26,
-                  fontWeight: FontWeight.w300,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-
-          // Button to go to second page
-          Positioned(
-            bottom: 80,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: ElevatedButton(
-                onPressed: _goToNextPage,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 40, vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  "Explore",
-                  style: TextStyle(
-                    fontSize: 16,
-                    letterSpacing: 1.2,
-                  ),
+                  color: Colors.white,
+                  fontSize: 42,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 8,
+                  shadows: [
+                    Shadow(
+                      color: Colors.white24,
+                      blurRadius: 12,
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
 
-class LocomotivePage extends StatelessWidget {
-  const LocomotivePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text("Locomotive"),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      body: const Center(
-        child: Text(
-          "This is your second page.\nInspired by smooth locomotive transitions.",
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: 22,
-            height: 1.6,
+        Positioned(
+          top: 40,
+          left: 40,
+          child: Text(
+            'VANITY',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+            ),
           ),
-          textAlign: TextAlign.center,
         ),
-      ),
+      ]),
     );
   }
 }
+
+// Sample assets list
+const sampleImages = [
+  'assets/cloth1.jpg',
+  'assets/cloth2.jpg',
+  'assets/cloth3.jpg',
+];
